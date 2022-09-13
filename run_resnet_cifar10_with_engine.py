@@ -14,6 +14,64 @@ from colossalai.nn.lr_scheduler import CosineAnnealingLR
 from torchvision.datasets import CIFAR10
 from torchvision.models import resnet34
 
+
+# build logger
+logger = get_dist_logger()
+
+# build resnet
+model = resnet34(num_classes=10)
+
+# build datasets
+train_dataset = CIFAR10(
+    root='./data',
+    download=True,
+    transform=transforms.Compose(
+        [
+            transforms.RandomCrop(size=32, padding=4),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.4914, 0.4822, 0.4465], std=[
+                0.2023, 0.1994, 0.2010]),
+        ]
+    )
+)
+
+test_dataset = CIFAR10(
+    root='./data',
+    train=False,
+    transform=transforms.Compose(
+        [
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.4914, 0.4822, 0.4465], std=[
+                0.2023, 0.1994, 0.2010]),
+        ]
+    )
+)
+
+# build dataloaders
+train_dataloader = get_dataloader(dataset=train_dataset,
+                                  shuffle=True,
+                                  batch_size=gpc.config.BATCH_SIZE,
+                                  num_workers=1,
+                                  pin_memory=True,
+                                  )
+
+test_dataloader = get_dataloader(dataset=test_dataset,
+                                 add_sampler=False,
+                                 batch_size=gpc.config.BATCH_SIZE,
+                                 num_workers=1,
+                                 pin_memory=True,
+                                 )
+
+# build criterion
+criterion = torch.nn.CrossEntropyLoss()
+
+# optimizer
+optimizer = torch.optim.SGD(model.parameters(), lr=0.1, momentum=0.9, weight_decay=5e-4)
+
+# lr_scheduler
+lr_scheduler = CosineAnnealingLR(optimizer, total_steps=gpc.config.NUM_EPOCHS)
+
 engine, train_dataloader, test_dataloader, _ = colossalai.initialize(model,
                                                                      optimizer,
                                                                      criterion,
