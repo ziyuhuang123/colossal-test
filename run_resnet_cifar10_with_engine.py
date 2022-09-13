@@ -23,8 +23,8 @@ model = resnet34(num_classes=10)
 
 # build datasets
 train_dataset = CIFAR10(
-    root='./data',
-    download=True,
+    root='../../../../data/cifar-10/',
+    download=False,
     transform=transforms.Compose(
         [
             transforms.RandomCrop(size=32, padding=4),
@@ -37,7 +37,7 @@ train_dataset = CIFAR10(
 )
 
 test_dataset = CIFAR10(
-    root='./data',
+    root='../../../../data/cifar-10/',
     train=False,
     transform=transforms.Compose(
         [
