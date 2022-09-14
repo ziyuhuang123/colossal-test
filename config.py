@@ -38,6 +38,6 @@ NUM_EPOCHS = 200
 WARMUP_EPOCHS = 40
 
 parallel = dict(
-    pipeline=1,
+    pipeline=2,
     tensor=dict(mode=TENSOR_PARALLEL_MODE, size=TENSOR_PARALLEL_SIZE),
 )
